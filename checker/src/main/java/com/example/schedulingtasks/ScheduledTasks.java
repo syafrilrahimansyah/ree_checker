@@ -48,41 +48,22 @@ public class ScheduledTasks {
 
 	private static final Logger log = LoggerFactory.getLogger(ScheduledTasks.class);
 
-	//private static final SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
-
 	@Scheduled(fixedRate = 5000)
 	public void reportCurrentTime() {
-		//log.info("The time is now {}", dateFormat.format(new Date()));
 		log.info("Checking New Launch");
 		Timestamp timeStamp = timeRecordDAO.timestamp();
 		List<LaunchInfo> launchInfo = launchInfoDAO.launchInfo(timeStamp);
-		//Collections.reverse(launchInfo);
 		if(launchInfo.isEmpty()) {
 			log.info("Launch Not Found.");
 		}else {
 			log.info("New Launch Found.");
-			
 			List<OmniformID> listOmniformID = new ArrayList<>();
 			for(LaunchInfo launch : launchInfo) {
 				OmniformID omniformID = new OmniformID();
 				omniformID.setId(launch.getOmniform_id());
 				listOmniformID.add(omniformID);
-				//System.out.println(launch.getOmniform_id());
 				timeRecordDAO.updateTimestamp(launch.getTimestamp());
 			}
-			/*
-			ObjectMapper mapper = new ObjectMapper();
-	        mapper.enable(SerializationFeature.INDENT_OUTPUT);
-	        try {
-				String jsonstr = mapper.writeValueAsString(listOmniformID);
-				RestTemplate restTemplate = new RestTemplate();
-				restTemplate.postForObject("http://localhost:8080/collector/collect", jsonstr, String.class);
-				//System.out.println(jsonstr);
-			} catch (JsonProcessingException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			*/
 			RestTemplate restTemplate = new RestTemplate();
 			restTemplate.postForObject("http://localhost:8080/collector/collect", listOmniformID, OmniformID.class);
 			
